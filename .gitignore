@@ -5,3 +5,8 @@ next-env.d.ts
 *.tsbuildinfo
 *.docx~
 ~$*
+
+# Python backend
+backend/.env
+backend/.venv
+__pycache__/

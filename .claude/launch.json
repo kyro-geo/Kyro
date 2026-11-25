@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "kyro", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 }
+    { "name": "kyro", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 },
+    { "name": "kyro-api", "runtimeExecutable": "backend/.venv/Scripts/python.exe", "runtimeArgs": ["-m", "uvicorn", "main:app", "--app-dir", "backend", "--env-file", "backend/.env", "--port", "8000", "--reload"], "port": 8000 }
   ]
 }

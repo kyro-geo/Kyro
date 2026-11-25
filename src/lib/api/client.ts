@@ -13,10 +13,10 @@ export class ApiError extends Error {
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-export async function request<T>(method: Method, path: string, body?: unknown, init?: RequestInit): Promise<T> {
+export async function request<T>(method: Method, path: string, body?: unknown, init?: RequestInit, base = config.apiUrl): Promise<T> {
   const token = await getAccessToken();
   const isForm = body instanceof FormData;
-  const res = await fetch(`${config.apiUrl}${path}`, {
+  const res = await fetch(`${base}${path}`, {
     method,
     ...init,
     headers: {

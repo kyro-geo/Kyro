@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/endpoints";
-import type { PlanId } from "@/lib/api/types";
+import type { PaymentProvider, PlanId } from "@/lib/api/types";
 
 /** Query keys in one place so mutations can invalidate precisely. */
 export const keys = {
@@ -80,7 +80,8 @@ export const useBeforeAfter = () => useQuery({ queryKey: keys.beforeAfter, query
 // M10
 export const usePlans = () => useQuery({ queryKey: keys.plans, queryFn: api.getPlans });
 export const useAccount = () => useQuery({ queryKey: keys.account, queryFn: api.getAccount });
-export const useCheckout = () => useMutation({ mutationFn: (plan: PlanId) => api.checkout(plan) });
+export const useCheckout = () =>
+  useMutation({ mutationFn: (v: { plan: PlanId; provider: PaymentProvider }) => api.checkout(v.plan, v.provider) });
 
 /** Triggers a browser download for a Blob returned by an export endpoint. */
 export function saveBlob(blob: Blob, filename: string) {

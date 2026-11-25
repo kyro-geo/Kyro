@@ -1,5 +1,7 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { PaymentProvider } from "@/lib/api/types";
 import { Check, LogOut, AlertTriangle } from "lucide-react";
 import { useAccount, useCheckout, usePlans } from "@/hooks/api";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +17,16 @@ export default function AccountPage() {
   const auth = useAuth();
   const router = useRouter();
   const toast = useToast();
+  const params = useSearchParams();
+  const [provider, setProvider] = useState<PaymentProvider>("stripe");
+  useEffect(() => {
+    const r = params.get("payment");
+    if (!r) return;
+    toast(r === "success" ? "Payment received. Your plan updates as soon as the provider confirms it." : r === "cancelled" ? "Checkout cancelled. Your plan is unchanged." : "Payment failed. Your plan is unchanged.");
+    if (r === "success") setTimeout(() => acc.refetch(), 3000);
+    router.replace("/account");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
   const nearLimit = acc.data?.usage.some((u) => u.used / u.limit >= 0.9);
 
   return (
@@ -47,6 +59,15 @@ export default function AccountPage() {
             </Card>
           )}
 
+          <div>
+          <div className="mb-4 flex items-center justify-end gap-3 text-sm">
+            <span className="text-mist-400">Pay with</span>
+            <div className="flex rounded-xl border border-white/[0.08] bg-ink-850 p-1">
+              {([["stripe", "Card (USD)"], ["payfast", "PayFast (PKR)"]] as const).map(([id, label]) => (
+                <button key={id} onClick={() => setProvider(id)} className={cn("rounded-lg px-3 py-1.5 transition", provider === id ? "bg-iris-400 font-semibold text-ink-950" : "text-mist-300 hover:text-white")}>{label}</button>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-5 sm:grid-cols-3">
             {plans.isLoading ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} lines={4} />) : plans.data?.map((p) => {
               const current = p.id === acc.data?.plan;
@@ -56,14 +77,18 @@ export default function AccountPage() {
                     <div className="flex items-center justify-between"><h3 className="font-semibold text-white">{p.name}</h3>{current && <Badge tone="iris">Current</Badge>}</div>
                     <div className="mt-3"><span className="font-display text-3xl font-extrabold text-white">${p.price}</span><span className="text-sm text-mist-400">/mo</span></div>
                     <ul className="mt-5 flex-1 space-y-2 text-[13px] text-mist-300">{p.features.map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-iris-300" />{f}</li>)}</ul>
-                    <Button className="mt-6 w-full" variant={current ? "secondary" : "primary"} disabled={current} loading={checkout.isPending && checkout.variables === p.id}
-                      onClick={() => checkout.mutate(p.id, { onSuccess: (r) => { toast(`Switching to ${p.name}…`); if (r.url.startsWith("http")) location.href = r.url; } })}>
+                    <Button className="mt-6 w-full" variant={current ? "secondary" : "primary"} disabled={current} loading={checkout.isPending && checkout.variables?.plan === p.id}
+                      onClick={() => checkout.mutate({ plan: p.id, provider }, {
+                        onSuccess: (r) => { if (r.url) location.href = r.url; else { toast(r.detail ?? "Plan updated."); acc.refetch(); } },
+                        onError: (e) => toast(e.message),
+                      })}>
                       {current ? "Your plan" : (acc.data && plans.data.findIndex((x) => x.id === acc.data!.plan) > plans.data.indexOf(p)) ? "Downgrade" : "Upgrade"}
                     </Button>
                   </Card>
                 </TiltCard>
               );
             })}
+          </div>
           </div>
         </div>
       )}

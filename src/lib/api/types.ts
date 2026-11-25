@@ -3,6 +3,7 @@
 export type JobStatus = "queued" | "running" | "completed" | "failed";
 export type EngineId = "chatgpt" | "gemini" | "perplexity";
 export type PlanId = "free" | "starter" | "pro";
+export type PaymentProvider = "stripe" | "payfast";
 
 export interface SubScore { key: string; label: string; value: number }
 

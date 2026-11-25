@@ -1,4 +1,4 @@
-import { http } from "./client";
+import { http, request } from "./client";
 import type * as T from "./types";
 
 /** One function per FastAPI route, grouped by SRS module (M1-M10). */
@@ -60,5 +60,7 @@ export const api = {
   // M10 Account & subscription
   getPlans: () => http.get<T.Plan[]>(`${V}/billing/plans`),
   getAccount: () => http.get<T.Account>(`${V}/account`),
-  checkout: (plan: T.PlanId) => http.post<{ url: string }>(`${V}/billing/checkout`, { plan }),
+  // Served by Next.js route handlers (src/app/api/billing), not FastAPI.
+  checkout: (plan: T.PlanId, provider: T.PaymentProvider) =>
+    request<{ url: string; detail?: string }>("POST", "/api/billing/checkout", { plan, provider }, undefined, ""),
 };

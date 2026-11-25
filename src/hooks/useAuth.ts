@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase";
 
-/** Supabase Auth session. Without Supabase config every call succeeds as a mock. */
+/** Supabase Auth session + actions (M10 login module). */
 export function useAuth() {
   const sb = getSupabase();
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(!!sb);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sb) return;
     sb.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
@@ -21,22 +20,15 @@ export function useAuth() {
 
   return {
     session,
+    user: session?.user ?? null,
     loading,
-    isMock: !sb,
-    signUp: async (email: string, password: string, meta: { full_name: string; website: string }) => {
-      if (!sb) return { error: null };
-      return sb.auth.signUp({ email, password, options: { data: meta } });
-    },
-    signIn: async (email: string, password: string) => {
-      if (!sb) return { error: null };
-      return sb.auth.signInWithPassword({ email, password });
-    },
-    signInWithGoogle: async () => {
-      if (!sb) return { error: null };
-      return sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/dashboard` } });
-    },
-    signOut: async () => {
-      await sb?.auth.signOut();
-    },
+    signUp: (email: string, password: string, meta: { full_name: string; website: string }) =>
+      sb.auth.signUp({ email, password, options: { data: meta, emailRedirectTo: `${location.origin}/dashboard` } }),
+    signIn: (email: string, password: string) => sb.auth.signInWithPassword({ email, password }),
+    signInWithGoogle: () =>
+      sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/dashboard` } }),
+    resetPassword: (email: string) =>
+      sb.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/auth?mode=signin` }),
+    signOut: () => sb.auth.signOut(),
   };
 }

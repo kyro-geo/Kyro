@@ -6,7 +6,6 @@ import { LayoutDashboard, TerminalSquare, PenLine, BookOpen, Layers, Radar, Netw
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/components/ui/primitives";
-import { useMocks } from "@/lib/config";
 
 export const nav = [
   { href: "/dashboard", label: "Dash", full: "Dashboard", icon: LayoutDashboard },
@@ -46,7 +45,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="hidden items-center gap-2 text-sm text-mist-400 md:flex">
           <span className="h-2 w-2 rounded-full bg-leaf-400 shadow-[0_0_0_4px_rgba(95,214,154,.15)]" />
           kyro.ai
-          {useMocks && <span className="ml-2 rounded-md bg-ember-500/10 px-2 py-0.5 text-[11px] font-semibold text-ember-400">Demo data</span>}
         </div>
         <div className="flex items-center gap-1">
           <button aria-label="Notifications" className="relative grid h-9 w-9 place-items-center rounded-lg text-mist-400 transition-colors hover:bg-white/[0.04] hover:text-white">
